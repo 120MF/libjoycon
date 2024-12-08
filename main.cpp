@@ -1,7 +1,7 @@
 #include "Device.h"
 
 int main() {
-    Device();
+    JoyCon::Device device;
 
     return 0;
 }
