@@ -9,16 +9,20 @@
 #define JOYCON_SIDE "R"
 #endif
 
+#define EV_MAX 0x1f
+
 #include <string>
-#include <cstring>
 #include <iostream>
-#include <linux/input.h>
-#include <fcntl.h>
+
 
 namespace JoyCon {
     class Device {
     public:
         Device();
+
+        ~Device();
+
+        void print_imu_event();
 
     protected:
         int get_fd_if_valid(const char device_path[]);

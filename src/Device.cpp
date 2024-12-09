@@ -1,5 +1,10 @@
 #include "Device.h"
 
+#include <unistd.h>
+#include <linux/input.h>
+#include <fcntl.h>
+#include <cstring>
+
 namespace JoyCon {
     Device::Device() {
         joycon_key_device_name = "Joy-Con (" + std::string(JOYCON_SIDE) + ")";
@@ -17,6 +22,56 @@ namespace JoyCon {
         if (!joycon_key_device_fd || !joycon_imu_device_fd) {
             throw std::runtime_error("Can't find valid JoyCon device.");
             exit(-1);
+        }
+    }
+
+    Device::~Device() {
+        ioctl(fd, EVIOCGRAB, static_cast<void *>(nullptr));
+    }
+
+    void Device::print_imu_event() {
+        std::cout << "Printing!" << std::endl;
+        bool stop;
+        struct input_event ev[64];
+        long rd;
+        fd_set rdfs;
+
+        FD_ZERO(&rdfs);
+        FD_SET(joycon_imu_device_fd, &rdfs);
+        while (1) {
+            select(joycon_imu_device_fd + 1, &rdfs, NULL, NULL, NULL);
+            rd = read(joycon_imu_device_fd, ev, sizeof(ev));
+
+            if (rd < static_cast<int>(sizeof(struct input_event))) {
+                printf("expected %d bytes, got %ld\n", static_cast<int>(sizeof(struct input_event)), rd);
+                throw std::runtime_error("Error reading");
+                return;
+            }
+
+            for (int i = 0; i < rd / sizeof(struct input_event); i++) {
+                unsigned int type = ev[i].type;
+                unsigned int code = ev[i].code;
+
+                printf("Event: time %ld.%06ld, ", ev[i].input_event_sec, ev[i].input_event_usec);
+
+                if (type == EV_SYN) {
+                    if (code == SYN_MT_REPORT)
+                        printf("++++++++++++++ %d ++++++++++++\n", code);
+                    else if (code == SYN_DROPPED)
+                        printf(">>>>>>>>>>>>>> %d <<<<<<<<<<<<\n", code);
+                    else
+                        printf("-------------- %d ------------\n", code);
+                    // TODO: using code name instead of digit
+                } else {
+                    printf("type %d (), code %d (), ",
+                           type,
+                           code); // TODO:type name and code name
+                    if (type == EV_MSC && (code == MSC_RAW || code == MSC_SCAN))
+                        printf("value %02x\n", ev[i].value);
+                    else
+                        printf("value %d\n", ev[i].value);
+                }
+            }
         }
     }
 
