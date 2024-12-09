@@ -1,9 +1,11 @@
-#include "Device.h"
+#include "Device.hpp"
 
 #include <unistd.h>
 #include <linux/input.h>
 #include <fcntl.h>
 #include <cstring>
+
+#include "utils.hpp"
 
 namespace JoyCon {
     Device::Device() {
@@ -61,16 +63,15 @@ namespace JoyCon {
 
                 if (type == EV_SYN) {
                     if (code == SYN_MT_REPORT)
-                        printf("++++++++++++++ %d ++++++++++++\n", code);
+                        printf("++++++++++++++ %d, %s ++++++++++++\n", code, to_code_name(type, code));
                     else if (code == SYN_DROPPED)
-                        printf(">>>>>>>>>>>>>> %d <<<<<<<<<<<<\n", code);
+                        printf(">>>>>>>>>>>>>> %d, %s <<<<<<<<<<<<\n", code, to_code_name(type, code));
                     else
-                        printf("-------------- %d ------------\n", code);
-                    // TODO: using code name instead of digit
+                        printf("-------------- %d, %s ------------\n", code, to_code_name(type, code));
                 } else {
-                    printf("type %d (), code %d (), ",
-                           type,
-                           code); // TODO:type name and code name
+                    printf("type %d (%s), code %d (%s), ",
+                           type, to_type_name(type),
+                           code, to_code_name(type, code));
                     if (type == EV_MSC && (code == MSC_RAW || code == MSC_SCAN))
                         printf("value %02x\n", ev[i].value);
                     else
