@@ -1,8 +1,8 @@
 #include "Device.h"
 
 int main() {
-    JoyCon::Device device;
-    device.print_imu_event();
+    auto device = JoyCon::Device::getInstance();
+    free(device);
 
     return 0;
 }

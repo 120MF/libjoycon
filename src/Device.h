@@ -18,9 +18,13 @@
 namespace JoyCon {
     class Device {
     public:
-        Device();
+        Device(const Device &obj) = delete;
+
+        Device &operator=(const Device &obj) = delete;
 
         ~Device();
+
+        static Device *getInstance();
 
         void print_imu_event();
 
@@ -30,6 +34,10 @@ namespace JoyCon {
         std::string get_device_name(int fd);
 
     private:
+        Device();
+
+        static Device *_instance;
+
         int fd = 0;
         std::string joycon_key_device_name;
         std::string joycon_imu_device_name;

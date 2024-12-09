@@ -25,6 +25,11 @@ namespace JoyCon {
         }
     }
 
+    Device *Device::getInstance() {
+        static Device device;
+        return &device;
+    }
+
     Device::~Device() {
         ioctl(fd, EVIOCGRAB, static_cast<void *>(nullptr));
     }
